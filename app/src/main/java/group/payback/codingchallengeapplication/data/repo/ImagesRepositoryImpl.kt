@@ -35,9 +35,14 @@ class ImagesRepositoryImpl @Inject constructor(
 
     override fun getImages(word: String): Flow<Resource<List<Hit>>> = flow {
         if (networkUtils.isInternetAvailable()){
-            val requestImagesFromAPI = getImagesFromAPI(word)
-            insertHitsToDAO(word,requestImagesFromAPI)
-            emit(Resource.Success(requestImagesFromAPI.map {it.toHitFromRemoteToDomain()}))
+            try {
+                val requestImagesFromAPI = getImagesFromAPI(word)
+                insertHitsToDAO(word,requestImagesFromAPI)
+                emit(Resource.Success(requestImagesFromAPI.map {it.toHitFromRemoteToDomain()}))
+            }catch (e:Exception){
+                emit(Resource.Success(getHitsByKeyword(word)))
+            }
+
         }else{
             emit(Resource.Success(getHitsByKeyword(word)))
         }
